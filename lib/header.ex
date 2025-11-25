@@ -38,9 +38,6 @@ defmodule Tabebuia.Header do
     devminor: non_neg_integer(),
     prefix: String.t()
   }
- #
-  # @block_size 512
-  # @header_size 500 
 
   @doc """
   Create a header for a file entry.
@@ -123,7 +120,6 @@ defmodule Tabebuia.Header do
   end
 
   defp insert_checksum(header_binary, checksum) do
-    # Split the header: everything before checksum, checksum placeholder, everything after
     <<before_checksum::binary-size(148), _checksum_placeholder::binary-size(8), after_checksum::binary>> = header_binary
     
     # Format checksum as 6 octal digits + null + space
