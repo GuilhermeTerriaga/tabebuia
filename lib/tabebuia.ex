@@ -9,12 +9,9 @@ defmodule Tabebuia do
   """
   @spec create(String.t(), [String.t()]) :: :ok | {:error, any()}
   def create(archive_path, paths) when is_list(paths) do
-    # Impure: Read files from filesystem
     with {:ok, entries} <- Tabebuia.Collector.gather_files(paths) do
-      # Build archive binary
       archive_data = Tabebuia.Builder.build_archive(entries)
       
-      # Write to filesystem
       File.write(archive_path, archive_data)
     end
   end
