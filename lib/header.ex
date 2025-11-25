@@ -38,9 +38,9 @@ defmodule Tabebuia.Header do
     devminor: non_neg_integer(),
     prefix: String.t()
   }
-
-  @block_size 512
-  @header_size 500 
+ #
+  # @block_size 512
+  # @header_size 500 
 
   @doc """
   Create a header for a file entry.
@@ -96,10 +96,9 @@ defmodule Tabebuia.Header do
     devminor = format_octal(header.devminor, 7) <> <<0>>
     prefix = String.pad_trailing(header.prefix, 155, <<0>>)
 
-    # Build the header without checksum (500 bytes)
     header_without_checksum = 
       name <> mode <> uid <> gid <> size <> mtime <> 
-      "        " <> # 8 spaces for checksum placeholder
+      "        " <> 
       typeflag <> linkname <> magic <> version <> uname <> gname <> 
       devmajor <> devminor <> prefix
 
@@ -140,7 +139,7 @@ defmodule Tabebuia.Header do
 
   defp pad_to_block(header_binary) when byte_size(header_binary) == 500 do
     # Add 12 bytes of padding to make 512-byte block
-    header_binary <> <<0::96>>  # 96 bits = 12 bytes
+    header_binary <> <<0::96>> 
   end
 
   defp ensure_trailing_slash(name) do

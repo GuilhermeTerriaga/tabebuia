@@ -35,11 +35,9 @@ defmodule Tabebuia.Collector do
   defp gather_directory(dir_path, base_dir) do
     relative_path = make_relative_path(dir_path, base_dir)
 
-    # Add directory entry itself
     dir_header = Tabebuia.Header.for_directory(relative_path)
     dir_entry = {dir_header, ""}
 
-    # Gather all files in directory
     case File.ls(dir_path) do
       {:ok, children} ->
         entries =
@@ -48,7 +46,7 @@ defmodule Tabebuia.Collector do
 
             case gather_path(child_path, base_dir) do
               {:ok, child_entries} -> acc ++ child_entries
-              # Skip errors for now, or handle differently
+              # TODO handle the errors
               {:error, reason} -> acc
             end
           end)
@@ -65,7 +63,7 @@ defmodule Tabebuia.Collector do
 
     case File.read(file_path) do
       {:ok, content} ->
-        # For now, use current time instead of file mtime to avoid conversion
+        # TODO calculate the time using unix timestamp
         header = Tabebuia.Header.for_file(relative_path, byte_size(content))
         {:ok, [{header, content}]}
 

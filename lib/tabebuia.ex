@@ -11,10 +11,10 @@ defmodule Tabebuia do
   def create(archive_path, paths) when is_list(paths) do
     # Impure: Read files from filesystem
     with {:ok, entries} <- Tabebuia.Collector.gather_files(paths) do
-      # Pure: Build archive binary
+      # Build archive binary
       archive_data = Tabebuia.Builder.build_archive(entries)
       
-      # Impure: Write to filesystem
+      # Write to filesystem
       File.write(archive_path, archive_data)
     end
   end
@@ -27,15 +27,13 @@ defmodule Tabebuia do
   Extract a TAR archive to the given directory.
   """
   def extract(archive_path, dest_path) do
-    # extract
-    :todo
+    # TODO extract
   end
 
   @doc """
   List the contents of a TAR archive.
   """
   def list(archive_path) do
-    # list
-    :todo
+    # TODO list
   end
 end

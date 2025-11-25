@@ -4,7 +4,6 @@ defmodule Tabebuia.Builder do
   """
 
   @block_size 512
-  # Two empty 512-byte blocks
   @end_blocks <<0::size(1024)>>
 
   @doc """
@@ -19,12 +18,8 @@ defmodule Tabebuia.Builder do
   end
 
   defp encode_entry({header, content}) do
-    # This is now 512 bytes
     header_block = Tabebuia.Header.encode(header)
-
-    # Pad content to 512-byte blocks
     content_blocks = pad_content(content, header.size)
-
     [header_block | content_blocks]
   end
 
