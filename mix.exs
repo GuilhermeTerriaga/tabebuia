@@ -6,7 +6,9 @@ defmodule Tabebuia.MixProject do
       app: :tabebuia,
       version: "0.1.0",
       elixir: "~> 1.18",
+      description: "A elixir implementation of tar 💐",
       start_permanent: Mix.env() == :prod,
+      package: package(),
       deps: deps()
     ]
   end
@@ -17,8 +19,15 @@ defmodule Tabebuia.MixProject do
       extra_applications: [:logger]
     ]
   end
-
   # Run "mix help deps" to learn about dependencies.
+  defp package do
+    [
+      licenses: ["MIT"],
+      description: "A elixir implementation of tar 💐",
+      links: %{"Github"=>"https://github.com/GuilhermeTerriaga/tabebuia"},
+    ]
+  end
+
   defp deps do
     [
       {:ex_doc, "~> 0.29", only: :dev, runtime: false}
@@ -26,4 +35,5 @@ defmodule Tabebuia.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end
+
 end
