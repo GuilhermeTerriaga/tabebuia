@@ -6,7 +6,7 @@ defmodule Tabebuia.MixProject do
       app: :tabebuia,
       version: "0.1.0",
       elixir: "~> 1.18",
-      description: "A elixir implementation of tar 💐",
+      description: "An elixir implementation of tar 💐",
       start_permanent: Mix.env() == :prod,
       package: package(),
       deps: deps()
@@ -23,7 +23,7 @@ defmodule Tabebuia.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      description: "A elixir implementation of tar 💐",
+      description: "An elixir implementation of tar 💐",
       links: %{"Github"=>"https://github.com/GuilhermeTerriaga/tabebuia"},
     ]
   end
