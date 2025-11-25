@@ -1,6 +1,6 @@
 # Tabebuia 💐
 
-A elixir implementation of tar.
+An elixir implementation of tar.
 
 ## Installation
 
