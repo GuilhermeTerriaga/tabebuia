@@ -1,6 +1,6 @@
-# Tabebuia
+# Tabebuia 💐
 
-**TODO: Add description**
+A elixir implementation of tar.
 
 ## Installation
 
