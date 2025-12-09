@@ -2,50 +2,48 @@ defmodule Tabebuia.Header do
   @moduledoc """
   Handles TAR header creation and encoding.
   """
-  
-  defstruct [
-    name: "",
-    mode: 0o644,
-    uid: 0,
-    gid: 0,
-    size: 0,
-    mtime: 0,
-    typeflag: "0",
-    linkname: "",
-    magic: "ustar",
-    version: "00",
-    uname: "",
-    gname: "",
-    devmajor: 0,
-    devminor: 0,
-    prefix: ""
-  ]
+
+  defstruct name: "",
+            mode: 0o644,
+            uid: 0,
+            gid: 0,
+            size: 0,
+            mtime: 0,
+            typeflag: "0",
+            linkname: "",
+            magic: "ustar",
+            version: "00",
+            uname: "",
+            gname: "",
+            devmajor: 0,
+            devminor: 0,
+            prefix: ""
 
   @type t :: %__MODULE__{
-    name: String.t(),
-    mode: non_neg_integer(),
-    uid: non_neg_integer(),
-    gid: non_neg_integer(),
-    size: non_neg_integer(),
-    mtime: non_neg_integer(),
-    typeflag: String.t(),
-    linkname: String.t(),
-    magic: String.t(),
-    version: String.t(),
-    uname: String.t(),
-    gname: String.t(),
-    devmajor: non_neg_integer(),
-    devminor: non_neg_integer(),
-    prefix: String.t()
-  }
+          name: String.t(),
+          mode: non_neg_integer(),
+          uid: non_neg_integer(),
+          gid: non_neg_integer(),
+          size: non_neg_integer(),
+          mtime: non_neg_integer(),
+          typeflag: String.t(),
+          linkname: String.t(),
+          magic: String.t(),
+          version: String.t(),
+          uname: String.t(),
+          gname: String.t(),
+          devmajor: non_neg_integer(),
+          devminor: non_neg_integer(),
+          prefix: String.t()
+        }
 
   @doc """
   Create a header for a file entry.
   """
-  @spec for_file(String.t(), non_neg_integer(), non_neg_integer() | nil ) :: t
+  @spec for_file(String.t(), non_neg_integer(), non_neg_integer() | nil) :: t
   def for_file(name, size, mtime \\ nil) do
     mtime = mtime || System.system_time(:second)
-    
+
     %__MODULE__{
       name: name,
       size: size,
@@ -60,7 +58,7 @@ defmodule Tabebuia.Header do
   @spec for_directory(String.t(), non_neg_integer()) :: t
   def for_directory(name, mtime \\ nil) do
     mtime = mtime || System.system_time(:second)
-    
+
     %__MODULE__{
       name: ensure_trailing_slash(name),
       mode: 0o755,
@@ -93,16 +91,26 @@ defmodule Tabebuia.Header do
     devminor = format_octal(header.devminor, 7) <> <<0>>
     prefix = String.pad_trailing(header.prefix, 155, <<0>>)
 
-    header_without_checksum = 
-      name <> mode <> uid <> gid <> size <> mtime <> 
-      "        " <> 
-      typeflag <> linkname <> magic <> version <> uname <> gname <> 
-      devmajor <> devminor <> prefix
+    header_without_checksum =
+      name <>
+        mode <>
+        uid <>
+        gid <>
+        size <>
+        mtime <>
+        "        " <>
+        typeflag <>
+        linkname <>
+        magic <>
+        version <>
+        uname <>
+        gname <>
+        devmajor <> devminor <> prefix
 
     # Calculate checksum and create final header
     checksum = calculate_checksum(header_without_checksum)
     header_with_checksum = insert_checksum(header_without_checksum, checksum)
-    
+
     # Add padding to make it a 512-byte block
     pad_to_block(header_with_checksum)
   end
@@ -113,6 +121,16 @@ defmodule Tabebuia.Header do
     |> String.pad_leading(length, "0")
   end
 
+  defp parse_octal(str) do
+    str
+    |> String.trim(<<0>>)
+    |> String.trim()
+    |> case do
+      "" -> 0
+      octal_str -> String.to_integer(octal_str, 8)
+    end
+  end
+
   defp calculate_checksum(header_binary) do
     header_binary
     |> :binary.bin_to_list()
@@ -120,25 +138,120 @@ defmodule Tabebuia.Header do
   end
 
   defp insert_checksum(header_binary, checksum) do
-    <<before_checksum::binary-size(148), _checksum_placeholder::binary-size(8), after_checksum::binary>> = header_binary
-    
+    <<before_checksum::binary-size(148), _checksum_placeholder::binary-size(8),
+      after_checksum::binary>> = header_binary
+
     # Format checksum as 6 octal digits + null + space
-    checksum_str = 
+    checksum_str =
       checksum
       |> Integer.to_string(8)
       |> String.pad_leading(6, "0")
       |> Kernel.<>(<<0>>)
       |> String.pad_trailing(8, " ")
-    
+
     before_checksum <> checksum_str <> after_checksum
   end
 
   defp pad_to_block(header_binary) when byte_size(header_binary) == 500 do
     # Add 12 bytes of padding to make 512-byte block
-    header_binary <> <<0::96>> 
+    header_binary <> <<0::96>>
   end
 
   defp ensure_trailing_slash(name) do
     if String.ends_with?(name, "/"), do: name, else: name <> "/"
+  end
+
+  defp all_zeros?(<<0::size(512 * 8)>>), do: true
+  defp all_zeros?(_), do: false
+
+  defp trim_null(binary) do
+    binary
+    |> String.split(<<0>>)
+    |> hd()
+    |> String.trim()
+  end
+
+  @doc """
+  Decode the binary header block into a Header struct
+  """
+  @spec decode(binary()) :: {:ok, t(), binary()} | {:error, atom()}
+  def decode(<<header_block::binary-size(512)>>) do
+    try do
+      <<header_data::binary-size(500), _padding::binary-size(12)>> = header_block
+
+      <<
+        name::binary-size(100),
+        mode_str::binary-size(8),
+        uid_str::binary-size(8),
+        gid_str::binary-size(8),
+        size_str::binary-size(12),
+        mtime_str::binary-size(12),
+        checksum_str::binary-size(8),
+        typeflag::binary-size(1),
+        linkname::binary-size(100),
+        magic::binary-size(6),
+        version::binary-size(2),
+        uname::binary-size(32),
+        gname::binary-size(32),
+        devmajor_str::binary-size(8),
+        devminor_str::binary-size(8),
+        prefix::binary-size(155)
+      >> = header_data
+
+      if all_zeros?(header_block) do
+        {:end, nil}
+      else
+        size = parse_octal(size_str)
+        mtime = parse_octal(mtime_str)
+        mode = parse_octal(mode_str)
+        uid = parse_octal(uid_str)
+        gid = parse_octal(gid_str)
+        devmajor = parse_octal(devmajor_str)
+        devminor = parse_octal(devminor_str)
+
+        name = trim_null(name)
+        linkname = trim_null(linkname)
+        uname = trim_null(uname)
+        gname = trim_null(gname)
+        prefix = trim_null(prefix)
+        magic = trim_null(magic)
+        version = trim_null(version)
+        typeflag = trim_null(typeflag)
+
+        header = %__MODULE__{
+          name: name,
+          mode: mode,
+          uid: uid,
+          gid: gid,
+          size: size,
+          mtime: mtime,
+          typeflag: typeflag,
+          linkname: linkname,
+          magic: magic,
+          version: version,
+          uname: uname,
+          gname: gname,
+          devmajor: devmajor,
+          devminor: devminor,
+          prefix: prefix
+        }
+
+        {:ok, header}
+      end
+    rescue
+      _e in MatchError -> {:error, :invalid_header}
+    end
+  end
+
+  def decode(_), do: {:error, :invalid_block_size}
+
+  @spec full_name(t()) :: String.t()
+  def full_name(header) when header.prefix != "" do
+    Path.join(header.prefix, header.name)
+  end
+
+  @spec full_name(t()) :: String.t()
+  def full_name(header) do
+    header.name
   end
 end
