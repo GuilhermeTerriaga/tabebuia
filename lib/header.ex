@@ -186,7 +186,7 @@ defmodule Tabebuia.Header do
         gid_str::binary-size(8),
         size_str::binary-size(12),
         mtime_str::binary-size(12),
-        checksum_str::binary-size(8),
+        _checksum_str::binary-size(8),
         typeflag::binary-size(1),
         linkname::binary-size(100),
         magic::binary-size(6),
