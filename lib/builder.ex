@@ -18,6 +18,11 @@ defmodule Tabebuia.Builder do
   end
 
   defp encode_entry({header, content}) do
+    if byte_size(content) != header.size do
+      raise ArgumentError,
+            "Content size (#{byte_size(content)}) doesn't match header size (#{header.size})"
+    end
+
     header_block = Tabebuia.Header.encode(header)
     content_blocks = pad_content(content, header.size)
     [header_block | content_blocks]
@@ -39,3 +44,4 @@ defmodule Tabebuia.Builder do
     archive <> @end_blocks
   end
 end
+
