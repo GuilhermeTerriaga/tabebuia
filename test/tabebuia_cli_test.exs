@@ -70,7 +70,7 @@ defmodule Tabebuia.CLITest do
       end)
 
     assert output =~ "Usage:"
-    assert output =~ "Tabebuia - Tar archive utility"
+    assert output =~ "Tabebuia 💐"
   end
 
 end
