@@ -46,8 +46,7 @@ defmodule Tabebuia.Collector do
 
             case gather_path(child_path, base_dir) do
               {:ok, child_entries} -> acc ++ child_entries
-              # TODO handle the errors
-              {:error, reason} -> acc
+              {:error, _reason} -> acc
             end
           end)
 
