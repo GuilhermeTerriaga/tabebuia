@@ -100,7 +100,7 @@ defmodule Mix.Tasks.Tabebuia do
 
   defp print_help() do
     IO.puts("""
-    Tabebuia - Tar archive utility
+    Tabebuia 💐
 
     Usage:
       mix tabebuia create ARCHIVE FILE1 [FILE2 ...]  # Create archive
